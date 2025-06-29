@@ -52,7 +52,7 @@ class Dataset:
         self.target.append(labels)
         self.data.append(kinematics)
 
-def dataset(task,usrOut) -> Tuple[List[np.ndarray], List[np.ndarray]] :
+def dataset(task,usrOut=None) -> Tuple[List[np.ndarray], List[np.ndarray]] :
     train = Dataset()
     test = Dataset()
 
@@ -71,15 +71,16 @@ def dataset(task,usrOut) -> Tuple[List[np.ndarray], List[np.ndarray]] :
         path = kinematics_path / rep
         kinematics = np.loadtxt(path)
 
-        if usrOut in rep:
+        if usrOut is None:
             test.add_rep(lines,kinematics)
-        else: 
-            train.add_rep(lines,kinematics)
+        else:
+            if usrOut in rep:
+                test.add_rep(lines,kinematics)
+            else: 
+                train.add_rep(lines,kinematics)
     
     return train,test
 
-# train, test = dataset("Suturing","G")
-# for index, (data,targets) in enumerate(train):
-#     print(len(data))
+
     
 
