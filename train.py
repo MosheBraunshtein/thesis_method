@@ -34,8 +34,8 @@ train_100, test = dataset("Suturing","G")
 # preprocessing 
 norm(train_100.data)
 # split
-train_70 = method(copy.deepcopy(train_100),per=30)
-train_50 = method(copy.deepcopy(train_100),per=50)
+train_90 = method(copy.deepcopy(train_100),per=10)
+train_85 = method(copy.deepcopy(train_100),per=15)
 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -45,11 +45,9 @@ criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # train phase
-log_dir='log/train1007050/loss'
+log_dir='log/suturing_usrOut_G/train1009085/loss'
 writer = SummaryWriter(log_dir=log_dir)
-# writer = SummaryWriter(log_dir='log/train1007050/loss')
-
-for index,train in enumerate([train_100,train_70,train_50]):
+for index,train in enumerate([train_100,train_90,train_85]):
     index = index*5
     num_epochs = 5
     for epoch in range(num_epochs):
@@ -81,8 +79,9 @@ for index,train in enumerate([train_100,train_70,train_50]):
 
         
         loss_value = total_loss /  train.total_timestamps
-        print(f"Epoch {epoch}: Loss = {loss_value:.4f}")
+        print(f"Epoch {epoch+index}: Loss = {loss_value:.4f}")
         writer.add_scalar("val", loss_value , epoch+index)
+
 
 writer.close()
 print(f"log to : {log_dir}")
@@ -90,7 +89,29 @@ print(f"log to : {log_dir}")
 
 # save model
 PROJECT_ROOT = Path(__file__).resolve().parent
-saved_parameters_path = PROJECT_ROOT/"saved_model_parameters"/"train1007050.pth"
+saved_parameters_path = PROJECT_ROOT/"saved_model_parameters"/"suturing_usrOut_G"/"train1009085.pth"
 torch.save(model.state_dict(), saved_parameters_path)
 print(f"model saved : {saved_parameters_path} ")
     
+exit(0)
+# test phase
+model.eval() 
+with torch.no_grad():
+    for trial_idx, (inputs, targets) in enumerate(test):
+            inputs = torch.tensor(inputs, dtype=torch.float32)
+            targets = torch.tensor(targets, dtype=torch.long)
+            inputs, targets = inputs.to(device), targets.to(device)
+
+            outputs = model(inputs)
+
+            _, preds = torch.max(outputs, 1)
+            correct += (preds == targets).sum().item()
+    acc = correct / test.total_timestamps
+    print(f"accuracy: {acc:.4f}")
+
+exit(0)
+# save model parameters
+save_path = os.path.join(os.path.dirname(__file__), "saved_model_parameters", "model.pth")
+torch.save(model.state_dict(), save_path)
+print("\nmodel parameters saved in: ")
+print(os.path.abspath("model.pth"))

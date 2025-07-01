@@ -4,13 +4,14 @@ from dataset import dataset
 from preprocessing import norm
 
 # extract dataset
-train_100, test = dataset("Knot_Tying",None)
+train_100, test = dataset("needle_passing",None)
 # preprocessing 
 norm(train_100.data)
+
 # test phase
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = LSTMModel().to(device) 
-model.load_state_dict(torch.load("saved_model_parameters/train100.pth",map_location=device))
+model.load_state_dict(torch.load("saved_model_parameters/train1009085.pth",map_location=device))
 
 model.eval() 
 correct = 0
